@@ -1,0 +1,84 @@
+# Ignore build directories
+/build/
+/Debug/
+/Release/
+
+# Ignore compiled object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Ignore compiled libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Ignore compiled dynamic libraries
+*.dll
+*.dylib
+*.so
+
+# Ignore executable files
+*.exe
+*.out
+*.app
+
+# Ignore dependency and intermediate files
+*.d
+*.dSYM/
+*.dep
+*.a.out
+
+# Ignore CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Ignore generated documentation files
+/docs/html/
+*.html
+
+# Ignore logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE and editor specific files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Ignore backup files
+*.bak
+*.tmp
+*.orig
+*.old
+
+# Ignore tags
+tags
+TAGS
+
+# Ignore coverage files
+*.gcno
+*.gcda
+*.gcov
+
+# Ignore test binaries and output
+/test-output/
+*.test
+
+# Ignore other common files
+*.plist
+*.class
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
