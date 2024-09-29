@@ -1,37 +1,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX_STRING_LENGTH 100
+
+unsigned long djb2(const char *str) {
+  unsigned long hash = 5381;
+  int c;
+
+  while ((c = *str++)) {
+    hash = ((hash << 5) + hash) + c;
+  }
+
+  return hash;
+}
+
 int main() {
-    FILE* buffer_file;
-    int *buffer;
-    int allocate_indexes = 0;
+  FILE *buffer_file;
+  char **buffer;
+  int allocate_indexes = 0;
+  int buffer_size = 10;
+  int string = 1;
 
-    buffer = malloc(sizeof(int) * 10);
+  buffer = malloc(sizeof(char*) * buffer_size);
 
-    if (!buffer) {
-        printf("Failed to allocate buffer");
-    } else {
-        while (1) {
-            int n;
-            int free_memory = 10 - allocate_indexes;
-            printf("The array free space is %d \n", free_memory);
-            printf("Number of indexes: ");
-            scanf("%d", &n);
-            if (n > free_memory) {
-                printf("It is not possible to allocate that amount of memory \n");
-                buffer_file = fopen("buffer.file", "a");
-                if (buffer_file == NULL) {
-                    printf("Failed to open file for writing.\n");
-                    break;
-                }
-                fprintf(buffer_file, "%d", n);
-                fputc('\n', buffer_file);
-                fclose(buffer_file);
-                continue;
-            }
-            allocate_indexes += n;
+  if (!buffer) {
+    printf("Failed to allocate buffer");
+  } else {
+    while (1) {
+      int free_memory = buffer_size - allocate_indexes;
+      if (allocate_indexes >= buffer_size) {
+        buffer_file = fopen("disk.txt", "a");
+        if (buffer_file == NULL) {
+          printf("Failed to open file for writing.\n");
+          break;
         }
+        char memory_string[MAX_STRING_LENGTH];
+        printf("Enter string %d: ", string);
+        scanf("%s", memory_string);
+        unsigned long string_hash = djb2(memory_string); 
+        fprintf(buffer_file, "%ld", string_hash);
+        fputc('\n', buffer_file);
+        fclose(buffer_file);
+        string++;
+        continue;
+      }
+      buffer[allocate_indexes] = malloc(MAX_STRING_LENGTH);
+      printf("Enter string %d: ", string);
+      scanf("%s", buffer[allocate_indexes]);
+
+      allocate_indexes++;
+      string++;
     }
-    free(buffer);
-    return 0;
+  }
+  free(buffer);
+  return 0;
 }
