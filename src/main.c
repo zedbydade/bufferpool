@@ -6,19 +6,24 @@
 #define D 3
 
 typedef struct Directory {
-  char id;
+  char *id;
   int count;
   int initialized;
 } Directory;
 
 void print_directory_array(Directory *directories, int size) {
   for (int i = 0; i < size; i++) {
-    printf("Directory %d:\n", i);
-    printf("  ID: %c\n", directories[i].id);
-    printf("  Count: %d\n", directories[i].count);
-    printf("  Initialized: %d\n", directories[i].initialized);
-   
-    
+    if (directories[i].initialized) {
+      printf("Directory %d:\n", i);
+      if (directories[i].id == NULL) {
+        printf("  ID: (null)\n");
+      } else {
+        printf("  ID: %s\n", directories[i].id);
+      }
+      printf("  Count: %d\n", directories[i].count);
+      printf("  Initialized: %d\n", directories[i].initialized);
+      printf("\n");
+    }
   }
 }
 
@@ -74,6 +79,13 @@ int main() {
     printf("Failed to allocate buffer");
   } else {
     Directory directories[4];
+
+    for (int i = 0; i < 4; i++) {
+      directories[i].id = NULL;
+      directories[i].count = 0;
+      directories[i].initialized = 0;
+    }
+
     while (1) {
       buffer_file = fopen("disk.txt", "a");
       if (buffer_file == NULL) {
@@ -93,37 +105,33 @@ int main() {
       int initialized_directory;
       initialized_directory = 0;
 
-      Directory string_directory;
-
       printf("Binary string: %s\n", string_binary);
       printf("LSBs (last %d bits): %s\n", D, lsbs);
 
-      char lsbs_value[2]="";
-      strncpy(lsbs_value, lsbs, 2);
-
-      for (int i = 0; i < 4; i++) { 
-        if (directories[i].id == lsbs_value) {
-          printf("I should not be here");
-          string_directory = directories[i]; 
+      for (int i = 0; i < 4; i++) {
+        if (directories[i].id != NULL && strcmp(directories[i].id, lsbs) == 0) {
+          directories[i].count++;
           initialized_directory = 1;
-          string_directory.count++;
         }
       }
 
       if (initialized_directory == 0) {
-        for (int i = 0; i < 4; i++) { 
-          if (directories[i].count == 1) {
+        for (int i = 0; i < 4; i++) {
+          if (directories[i].id != 0) {
             continue;
           }
-          directories[i].id = lsbs_value;
+          directories[i].id = strdup(lsbs);
           directories[i].initialized = 1;
-          directories[i].count++;
+          directories[i].count = 1;
+          printf("Id: %s\n", directories[i].id);
+          printf("Initialized: %d\n", directories[i].initialized);
+          printf("Count: %d\n", directories[i].count);
+          break;
         }
       }
 
       print_directory_array(directories, 4);
 
-      allocate_indexes++;
       string++;
     }
   }
