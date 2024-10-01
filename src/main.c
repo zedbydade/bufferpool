@@ -3,12 +3,21 @@
 #include <string.h>
 
 #define MAX_STRING_LENGTH 100
+#define MAX_BUCKET_LENGTH 3
 #define D 3
+#define d 3
+
+typedef struct Bucket {
+  int local_depth;
+  int count;
+  int keys[MAX_BUCKET_LENGTH];
+} Bucket;
 
 typedef struct Directory {
   char *id;
   int count;
   int initialized;
+  Bucket **bucket;
 } Directory;
 
 void print_directory_array(Directory *directories, int size) {
@@ -22,6 +31,25 @@ void print_directory_array(Directory *directories, int size) {
       }
       printf("  Count: %d\n", directories[i].count);
       printf("  Initialized: %d\n", directories[i].initialized);
+      printf("\n");
+
+      if (directories[i].bucket != NULL && directories[i].bucket[0]->count != 0) {
+        printf("  Buckets:\n");
+        for (int j = 0; j < 1; j++) {
+          if (directories[i].bucket[j] != NULL) {
+            printf("    Bucket %d:\n", j);
+            printf("      Local Depth: %d\n", directories[i].bucket[j]->local_depth);
+            printf("      Count: %d\n", directories[i].bucket[j]->count);
+            printf("      Keys: ");
+            for (int k = 0; k < directories[i].bucket[j]->count; k++) {
+              printf("%d ", directories[i].bucket[j]->keys[k]);
+            }
+            printf("\n");
+          }
+        }
+      } else {
+        printf("  No buckets.\n");
+      }
       printf("\n");
     }
   }
@@ -84,6 +112,12 @@ int main() {
       directories[i].id = NULL;
       directories[i].count = 0;
       directories[i].initialized = 0;
+
+      directories[i].bucket = (Bucket **)malloc(1 * sizeof(Bucket *));
+
+      directories[i].bucket[0] = (Bucket *)malloc(sizeof(Bucket));
+      directories[i].bucket[0]->local_depth = 3;
+      directories[i].bucket[0]->count = 0;
     }
 
     while (1) {
@@ -110,7 +144,12 @@ int main() {
 
       for (int i = 0; i < 4; i++) {
         if (directories[i].id != NULL && strcmp(directories[i].id, lsbs) == 0) {
+          int free_position;
+          int int_key = atoi(memory_string);
+          free_position = directories[i].bucket[0]->count;
           directories[i].count++;
+          directories[i].bucket[0]->keys[free_position] = int_key;
+          directories[i].bucket[0]->count++;
           initialized_directory = 1;
         }
       }
@@ -123,9 +162,12 @@ int main() {
           directories[i].id = strdup(lsbs);
           directories[i].initialized = 1;
           directories[i].count = 1;
-          printf("Id: %s\n", directories[i].id);
-          printf("Initialized: %d\n", directories[i].initialized);
-          printf("Count: %d\n", directories[i].count);
+          int free_position;
+          int int_key = atoi(memory_string);
+          free_position = directories[i].bucket[0]->count;
+          directories[i].count++;
+          directories[i].bucket[0]->keys[free_position] = int_key;
+          directories[i].bucket[0]->count++;
           break;
         }
       }
