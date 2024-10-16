@@ -3,6 +3,8 @@
 /Debug/
 /Release/
 
+buffer
+
 # Ignore compiled object files
 *.o
 *.obj
