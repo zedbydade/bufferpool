@@ -18,7 +18,7 @@ void print_directory_array(Directory *directories, int size) {
     printf("  Count: %d\n", directories[i].count);
     printf("  Initialized: %d\n", directories[i].initialized);
    
-    printf("\n");
+    
   }
 }
 
