@@ -105,7 +105,10 @@ void find(Directory directories[], char *key) {
       Directory current_directory;
       int key;
       for (int j = 0; j < MAX_BUCKET_LENGTH; j++) {
-
+        Bucket *directory_bucket = directories[i].bucket[0];
+        if (directory_bucket->keys[j] == int_key) {
+          printf("Bucket positio %d", j);
+        }
       }
     }
   }
@@ -143,10 +146,20 @@ int main() {
         printf("Failed to open file for writing.\n");
         break;
       }
+      char action[49];
       char memory_string[MAX_STRING_LENGTH];
 
       printf("Enter string %d: ", string);
       scanf("%s", memory_string);
+      printf("Enter a operation: ");
+      scanf("%48s", action);
+
+      int int_key = atoi(memory_string);
+
+      if (strcmp(action, "find") == 0) {
+        find(directories, memory_string);
+        continue;
+      }
 
       char *string_binary;
       string_binary = string_to_binary(memory_string);
@@ -162,7 +175,6 @@ int main() {
       for (int i = 0; i < 4; i++) {
         if (directories[i].id != NULL && strcmp(directories[i].id, lsbs) == 0) {
           int free_position;
-          int int_key = atoi(memory_string);
           free_position = directories[i].bucket[0]->count;
           directories[i].count++;
           directories[i].bucket[0]->keys[free_position] = int_key;
