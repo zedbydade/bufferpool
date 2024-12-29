@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -96,47 +97,97 @@ void print_directory_array(Directory *directories, int size) {
   }
 }
 
-void insert(Directory directories[], char *memory_string, int int_key) {
+void remove_repeated_characters(char *str) {
+  bool seen[256] = {false};
+  int write_index = 0;
+  int read_index = 0;
+
+  while (str[read_index] != '\0') {
+    char current_char = str[read_index];
+    if (!seen[(unsigned char)current_char]) {
+      seen[(unsigned char)current_char] = true;
+      str[write_index] = current_char;
+      write_index++;
+    }
+    read_index++;
+  }
+  str[write_index] = '\0';
+}
+
+char *split_buckets(Directory directories[]) {
+  char *lsbs_array = NULL;
+  lsbs_array = malloc(20 * sizeof(char));
+  memset(lsbs_array, 0, 20 * sizeof(char));
+  int lsb_count = 0;
+  for (int i = 0; i < 4; i++) {
+    Bucket *directory_bucket = directories[i].bucket[0];
+    if (directory_bucket == NULL) {
+      continue;
+    }
+    int count;
+    count = directory_bucket->count;
+    for (int j = 0; j < count; j++) {
+      char string[12];
+      sprintf(string, "%d", directory_bucket->keys[j]);
+
       char *string_binary;
-      string_binary = string_to_binary(memory_string);
+      string_binary = string_to_binary(string);
+      char *lsbs = get_lsbs_from_binary_string(string_binary, D + 1);
+      strcpy(&lsbs_array[lsb_count], lsbs);
+      lsb_count++;
 
-      char *lsbs = get_lsbs_from_binary_string(string_binary, D);
+      free(string_binary);
+      free(lsbs);
+    }
+  }
+  remove_repeated_characters(lsbs_array);
+  return lsbs_array;
+}
 
-      int initialized_directory;
-      initialized_directory = 0;
+void insert(Directory directories[], char *memory_string, int int_key) {
+  char *string_binary;
+  string_binary = string_to_binary(memory_string);
 
-      printf("Binary string: %s\n", string_binary);
-      printf("LSBs (last %d bits): %s\n", D, lsbs);
+  char *lsbs = get_lsbs_from_binary_string(string_binary, D);
 
-      for (int i = 0; i < 4; i++) {
-        if (directories[i].id != NULL && strcmp(directories[i].id, lsbs) == 0) {
-          int free_position;
-          free_position = directories[i].bucket[0]->count;
-          directories[i].count++;
-          directories[i].bucket[0]->keys[free_position] = int_key;
-          directories[i].bucket[0]->count++;
-          initialized_directory = 1;
-        }
+  int initialized_directory;
+  initialized_directory = 0;
+
+  printf("Binary string: %s\n", string_binary);
+  printf("LSBs (last %d bits): %s\n", D, lsbs);
+
+  for (int i = 0; i < 4; i++) {
+    if (directories[i].id != NULL && strcmp(directories[i].id, lsbs) == 0) {
+      if (directories[i].count == d) {
+        char *lsb_array = split_buckets(directories);
+        printf("Overflow, printing new lsb array: %s\n", lsb_array);
       }
+      int free_position;
+      free_position = directories[i].bucket[0]->count;
+      directories[i].count++;
+      directories[i].bucket[0]->keys[free_position] = int_key;
+      directories[i].bucket[0]->count++;
+      initialized_directory = 1;
+    }
+  }
 
-      if (initialized_directory == 0) {
-        for (int i = 0; i < 4; i++) {
-          if (directories[i].id != 0) {
-            continue;
-          }
-          directories[i].id = strdup(lsbs);
-          directories[i].initialized = 1;
-          directories[i].count = 1;
-          int free_position;
-          free_position = directories[i].bucket[0]->count;
-          directories[i].count++;
-          directories[i].bucket[0]->keys[free_position] = int_key;
-          directories[i].bucket[0]->count++;
-          break;
-        }
+  if (initialized_directory == 0) {
+    for (int i = 0; i < 4; i++) {
+      if (directories[i].id != 0) {
+        continue;
       }
+      directories[i].id = strdup(lsbs);
+      directories[i].initialized = 1;
+      directories[i].count = 1;
+      int free_position;
+      free_position = directories[i].bucket[0]->count;
+      directories[i].bucket[0]->keys[free_position] = int_key;
+      directories[i].bucket[0]->count++;
+      break;
+    }
+  }
 
-      print_directory_array(directories, 4);
+  print_directory_array(directories, 4);
 };
 
 void find(Directory directories[], char *key, int **value) {
@@ -177,9 +228,9 @@ int main() {
   if (!buffer) {
     printf("Failed to allocate buffer");
   } else {
-    Directory directories[4];
+    Directory directories[7];
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 8; i++) {
       directories[i].id = NULL;
       directories[i].count = 0;
       directories[i].initialized = 0;
@@ -187,7 +238,7 @@ int main() {
       directories[i].bucket = (Bucket **)malloc(1 * sizeof(Bucket *));
 
       directories[i].bucket[0] = (Bucket *)malloc(sizeof(Bucket));
-      directories[i].bucket[0]->local_depth = 3;
+      directories[i].bucket[0]->local_depth = d;
       directories[i].bucket[0]->count = 0;
     }
 
